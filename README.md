@@ -12,7 +12,11 @@ Dorker is a Python tool that generates Google, Shodan, GitHub, and GitLab dorkin
 3. Install the required libraries: `pip install -r requirements.txt`
 
 # Usage
-1. Run the tool: python dorker.py
+1. Run the tool: 
+```bash
+python3 dorker.py -t google.com -o google_out
+python3 dorker.py -l list.txt -o lists
+```
 2. That's it
 
 # Examples

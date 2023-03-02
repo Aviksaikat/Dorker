@@ -8,6 +8,7 @@ def get_arguments():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-t", "--target", dest="target", help="target")
 	parser.add_argument("-o", "--output", dest="output", help="output")
+	parser.add_argument("-l", "--lists", dest="lists", help="pass list of file containing targets 1 per line", required=False)
 	option = parser.parse_args()
 	return option
 
@@ -17,7 +18,7 @@ def dork_to_link(dork, target):
     #exit(1)
     #dork = urllib.parse.quote(dork)
     link = '<a href="https://www.shodan.io/search?query=' + urllib.parse.quote(dork) + '">' + dork + '</a><br>'
-    print(link)
+    #print(link)
     return link
 
 def shodan_dorking(f, target):
@@ -142,7 +143,18 @@ def shodan_dorking(f, target):
 
 def dorking(target, output):
 	# GOOGLE DORKING
-	mkdir(output)
+	#print(target)
+	#exit()
+	try:
+		mkdir(output)
+	except:
+		pass
+
+	if target != output:
+		output = output + '/' + target
+
+		mkdir(output)
+
 	f = open(f'{output}/google-dorking.html', 'a')
 	f.write(
 		f'<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"> <title>Google Dorks for {target}</title> </head> <body><br>')
@@ -269,14 +281,40 @@ def dorking(target, output):
 	shodan_dorking(f, target)
 	f.close()
 
-	
-options = get_arguments()
-if options.target and re.match("^((?!-))(xn--)?[a-z0-9][a-z0-9-_]{0,61}[a-z0-9]{0,1}\.(xn--)?([a-z0-9\-]{1,61}|[a-z0-9-]{1,30}\.[a-z]{2,})$", options.target):
-	try:
-		dorking(options.target, options.output)
-		print(f"\n[+] Success. Please check the {options.target} directory.\n")
-	except Exception as e:
-		print(e)
-		#print(f"\n[-] Directory '{options.target}' is already present.\n")
-else:
-	print("\n[-] Usage: python3 nDorker.py -t example.com -o output_dir\n")
+def main():	
+	options = get_arguments()
+	target = options.target
+	output = options.output
+	lists = options.lists
+
+	if target and re.match("^((?!-))(xn--)?[a-z0-9][a-z0-9-_]{0,61}[a-z0-9]{0,1}\.(xn--)?([a-z0-9\-]{1,61}|[a-z0-9-]{1,30}\.[a-z]{2,})$", target):
+		try:
+			dorking(target, output)
+			print(f"[+] Success. Please check the {target} directory.")
+		except Exception as e:
+			print(e)
+			#print(f"\n[-] Directory '{options.target}' is already present.\n")
+
+	elif lists:
+		#print(options.lists)
+		with open(lists, 'r') as f:
+			lists = f.readlines()
+			# remove new lines
+			lists = [e.replace('\n','') for e in lists]
+			#print(lists)
+			#exit()
+			for target in lists:
+				try:
+					#print(target.replace('\n', ''))
+					dorking(target.strip(), output)
+					print(f"[+] Success. Please check the {target} directory.")
+				except Exception as e:
+					print(e)
+					#continue
+	else:
+		print("[-] Usage: python3 dorker.py -t example.com -o output_dir")
+		print("[-] Usage: python3 dorker.py -l targets.txt -o output_dir")
+
+
+if __name__ == "__main__":
+	main()
