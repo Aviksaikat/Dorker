@@ -15,7 +15,11 @@ def get_arguments():
 def dork_to_link(dork, target):
     dork = dork.replace("{target}", f"{target}")
     #print(dork)
-    #exit(1)
+    if "org" in dork.lower():
+    	#print(dork)
+    	dork = re.findall("[Oo]rg\:.*", dork)[0].split('.')[1]
+    	#print(dork)
+    	#exit(1)
     #dork = urllib.parse.quote(dork)
     link = '<a href="https://www.shodan.io/search?query=' + urllib.parse.quote(dork) + '">' + dork + '</a><br>'
     #print(link)
@@ -24,7 +28,9 @@ def dork_to_link(dork, target):
 def shodan_dorking(f, target):
 	# List of dorks
 	dorks = [
+		'org:{target} http.favicon.hash:116323821',
 		'ssl: "{target}" 200 http.title:"dashboard"',
+		'http.title:"DisallowedHost at /" ssl:"{target}.*"',
 	    'http.html:"Wordpress" org:{target}',
 	    'http.html:"Discourse" org:{target}',
 	    'http.html:"Grafana" org:{target}',
@@ -192,15 +198,15 @@ def dorking(target, output):
 		("site", f"{target} intitle:\"index of\" intext:\"passwd\""),
 		("site", f"{target} intext:\"id_rsa\" -inurl:cloud|mirror AND intitle:\"index of\""),
 		("site", f"{target} AND intext:'**one_of_password_pattern_value_here**'"),
-		("", f"\"Org:{target}\": NPM_API_KEY="),
-		("", f"\"Org:{target}\": NPM_API_TOKEN="),
-		("", f"\"Org:{target}\": NPM_AUTH_TOKEN="),
-		("", f"\"Org:{target}\": NPM_CONFIG_AUDIT="),
-		("", f"\"Org:{target}\": NPM_CONFIG_STRICT_SSL="),
-		("", f"\"Org:{target}\": NPM_EMAIL="),
-		("", f"\"Org:{target}\": NPM_PASSWORD="),
-		("", f"\"Org:{target}\": "),
-		("", f"\"Org:{target}\": NPM_SECRET_KEY="),
+		("", f"\"Org:{target.split('.')[0]}\": NPM_API_KEY="),
+		("", f"\"Org:{target.split('.')[0]}\": NPM_API_TOKEN="),
+		("", f"\"Org:{target.split('.')[0]}\": NPM_AUTH_TOKEN="),
+		("", f"\"Org:{target.split('.')[0]}\": NPM_CONFIG_AUDIT="),
+		("", f"\"Org:{target.split('.')[0]}\": NPM_CONFIG_STRICT_SSL="),
+		("", f"\"Org:{target.split('.')[0]}\": NPM_EMAIL="),
+		("", f"\"Org:{target.split('.')[0]}\": NPM_PASSWORD="),
+		("", f"\"Org:{target.split('.')[0]}\": "),
+		("", f"\"Org:{target.split('.')[0]}\": NPM_SECRET_KEY="),
 		("org", f"{target} ftp"),
 		("org", f"{target} Ldap"),
 		("org", f"{target} https://"),
@@ -214,7 +220,8 @@ def dorking(target, output):
 		("site", f"openbugbounty.org inurl:reports intext:\"{target}\""),
 		("", f"(site:{target} | site:{target}) & \"choose file\""),
 		("site", f"{target} \"index of\" inurl:ftp secret"),
-		("site", f"{target} inurl:'/content/dam'")
+		("site", f"{target} inurl:'/content/dam'"),
+		("site", f"s3.amazonaws.com {target}")
 	]
 
 	for dork in google_dorks:
@@ -289,6 +296,7 @@ def main():
 
 	if target and re.match("^((?!-))(xn--)?[a-z0-9][a-z0-9-_]{0,61}[a-z0-9]{0,1}\.(xn--)?([a-z0-9\-]{1,61}|[a-z0-9-]{1,30}\.[a-z]{2,})$", target):
 		try:
+			target = f"*.{target}"
 			dorking(target, output)
 			print(f"[+] Success. Please check the {target} directory.")
 		except Exception as e:
