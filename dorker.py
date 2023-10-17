@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 import argparse
-from os import mkdir
 import re
 import urllib.parse
+from os import mkdir
+
 
 def get_arguments():
 	parser = argparse.ArgumentParser()
